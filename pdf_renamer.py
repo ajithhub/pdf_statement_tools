@@ -30,8 +30,9 @@ class PDFRenamer():
         if number_of_pages < self.page:
             raise(Exception(f"Not enough pages in f{file_name}"))
 
-        page = reader.pages[0]
+        page = reader.pages[self.page - 1]
         text = page.extract_text()
+        log.info(text)
         return text
 
     def parse_text(self, text):
@@ -69,7 +70,7 @@ class PDFRenamer():
 
 
 class Schwab401kStatement(PDFRenamer):
-    "Period covered: JANUARY 1,2014 TOMARCH 31,2014 Prepared for: AJITH ANTONY"
+    # "Period covered: JANUARY 1,2014 TOMARCH 31,2014 Prepared for: AJITH ANTONY"
     def __init__(self):
         pattern = "Period covered: (\w+) (\d+),(\d{4}) TO\w+ \d+,\d{4} Prepared for: AJITH ANTONY"
 
@@ -95,8 +96,6 @@ class Schwab401kStatement(PDFRenamer):
         new_file_name = output_fmt.format(start_year, quarter_map[start_month])
         return new_file_name
 
-
-
 def get_all_pdfs(directory):
     def find_ext(dr, ext, ig_case=False):
         if ig_case:
@@ -112,9 +111,10 @@ if __name__ == "__main__":
     log = logging.getLogger("main")
 
     file_name = "test.pdf"
+    dir_name = "."
     log.info(f"Processing {file_name}")
 
     schwab_renamer = Schwab401kStatement()
 
-    for statement in get_abs_paths(get_all_pdfs(".")):
+    for statement in get_abs_paths(get_all_pdfs(dir_name)):
         schwab_renamer.rename(statement)
